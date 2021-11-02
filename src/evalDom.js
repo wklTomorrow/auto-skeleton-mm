@@ -4,11 +4,16 @@ module.exports = function() {
     class EvalDom {
         constructor(options) {
             this.ELEMENT = [
-                'IMG',
+                'img',
                 'textarea',
                 'button',
                 'input',
                 'canvas',
+                'svg',
+                'audio',
+                'code',
+                'pre',
+                'video'
                 // 'audio', 'button', 'canvas', 'code', 'IMG', 'input', 'pre', 'svg', 'textarea', 'video', 'xmp'
             ]
         
@@ -17,7 +22,7 @@ module.exports = function() {
             this.bgColors = '#fff'
         
             this.EXCLUDE = [
-                'I'
+                'i'
             ]
             this.options = options
             this.blocks = []
@@ -59,7 +64,8 @@ module.exports = function() {
                                 break
                             }
                         }
-                        if (_this.ELEMENT.includes(node.tagName) || _this.isCustomCardBlock(node) || backgroundHasurl || _this.isText(node) || hasChildText) {
+                        const tagName = node.tagName || ''
+                        if (_this.ELEMENT.includes(tagName.toLowerCase()) || _this.isCustomCardBlock(node) || backgroundHasurl || _this.isText(node) || hasChildText) {
                             const {left, top, height, width} = _this.getRect(node)
                             if (height > 0 && width > 0 && left >= 0 && left <= win_w && win_h - top >= 20 && top >= 0) {
                                 const {
@@ -85,7 +91,8 @@ module.exports = function() {
                                     hasNoBorder: !hasNoBorder,
                                 })
                                 ;[...childNodes].map(ele => {
-                                    _this.EXCLUDE.includes(ele.tagName) && node.removeChild(ele)
+                                    const eleTageName = ele.tagName || ''
+                                    _this.EXCLUDE.includes(eleTageName.toLowerCase()) && node.removeChild(ele)
                                 })
                             }
                         } else if (childNodes && childNodes.length) {
