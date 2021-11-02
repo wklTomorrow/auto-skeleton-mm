@@ -1,0 +1,19 @@
+{
+  "name": "auto-skeleton",
+  "version": "1.0.0",
+  "description": "auto and inject skeleton",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "base64-img": "^1.0.4",
+    "cheerio": "^1.0.0-rc.10",
+    "html-minifier": "^4.0.0",
+    "ora": "^3.0.0",
+    "puppeteer": "^1.4.0"
+  }
+}
