@@ -4,7 +4,7 @@ const pp = require('./src/pp');
 const EvalDom = require('./src/evalDom')
 const base64Img = require('base64-img');
 const defaultEval = require('./src/default.html')
-const {Spinner} = require('./src/utils')
+const {Spinner, sleep} = require('./src/utils')
 
 class AutoSkeleton {
     /**
@@ -76,26 +76,29 @@ class AutoSkeleton {
             tags.forEach(node => {
                 htmlPluginData[position].push({
                     ...node,
-                    innerHTML: node.tagCode
+                    innerHTML: this.isFunction(node.tagCode) ? node.tagCode() : node.tagCode
                 })
             })
         }
     }
 
-    async init(options = {}) {
-        const {headless = true, url, pageName = '', output = {}} = options
-        const spinner = Spinner('magentaBright');
-        spinner.text = '启动浏览器...';
-        const browser = await pp({headless})
-        spinner.text = `正在打开页面：${url}...`;
-        const page = await browser.openPage(url)
-        await this.dealPage({page, options, spinner});
-        await browser.browser.close();
-        process.exit(0);
+    isFunction(fn) {
+        return typeof fn === 'function'
     }
 
-    async dealPage({page, options, spinner}) {
-        const {pageName = '', output = {}, loadDestory} = options
+    async init(options = {}) {
+        const {headless = true, url, device, sleepTime = 100, extraHTTPHeaders} = options
+        const spinner = Spinner('magentaBright');
+        spinner.text = '启动浏览器...';
+        const browser = await pp({device, headless})
+        spinner.text = `正在打开页面：${url}...`;
+        const page = await browser.openPage(url, extraHTTPHeaders)
+        await sleep(sleepTime)
+        await this.dealPage({page, options, spinner, browser});
+    }
+
+    async dealPage({page, options, spinner, browser}) {
+        const {pageName = '', output = {}, loadDestory, pageShowContain} = options
         const {filepath, fileDir, injectSelector} = output
         const defaultName = 'skeleton'
         spinner.text = '正在生成骨架屏...';
@@ -113,9 +116,11 @@ class AutoSkeleton {
         const defaultFile = `${fileDir}/${pageName || defaultName}-${filepath}`
         await page.screenshot({ path: defaultPage });
         const images = base64Img.base64Sync(defaultPage)
-        const defaultHtml = defaultEval({images, injectSelector, loadDestory})
+        const defaultHtml = defaultEval({images, injectSelector, loadDestory, pageShowContain})
         this.writeFile(defaultFile, defaultHtml)
         spinner.clear().succeed(`skeleton screen has created and output to ${fileDir}}`);
+        await browser.browser.close();
+        process.exit(0);
     }
 
     writeFile(filepath, html) {

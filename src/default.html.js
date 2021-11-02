@@ -1,4 +1,4 @@
-module.exports = function ({images, injectSelector, loadDestory}) {
+module.exports = function ({images, injectSelector, loadDestory, pageShowContain}) {
     return `
         <style>
         .skeleton {
@@ -48,10 +48,40 @@ module.exports = function ({images, injectSelector, loadDestory}) {
             setTimeout(function(){
                 const dom = document.getElementById('${injectSelector}')
                 if (dom) {
-                    document.body.removeChild(don)
+                    document.body.removeChild(dom)
                 }
             }, 0);
         });` : ''}
+        </script>
+        <script id='isMobileType'>
+            function isMobile() {
+                return (/phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone|webOS|android/i.test(navigator.userAgent))
+            }
+            const pcShow = ${pageShowContain.includes('pc')}
+            const mobileShow = ${pageShowContain.includes('mobile')}
+            function removeDom() {
+                const dom = document.getElementById('${injectSelector}')
+                dom && document.body.removeChild(dom)
+            }
+            function removeScript() {
+                const dom = document.getElementById('isMobileType')
+                dom && dom.parentNode.removeChild(dom)
+            }
+            if (mobileShow && pcShow) {
+                removeScript()
+            } else if (mobileShow && !pcShow) {
+                if (!isMobile()) {
+                    removeDom()
+                } else {
+                    removeScript()
+                }
+            } else {
+                if (isMobile()) {
+                    removeDom()
+                } else {
+                    removeScript()
+                }
+            }
         </script>
     `
 }

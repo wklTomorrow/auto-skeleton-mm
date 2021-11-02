@@ -19,4 +19,13 @@ function Spinner(color) {
     return spinner;
 }
 
+function sleep(time) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve()
+        }, time);
+    })
+}
+
 exports.Spinner = Spinner
+exports.sleep = sleep

@@ -4,6 +4,7 @@ const skeletonConfig = require('./skeleton.config')
 
 const {output, pageName = 'skeleton'} = skeletonConfig
 const {fileDir = 'skeleton', filepath = 'index.js', injectSelector} = output
+const tagCode = require(`./${fileDir}/${pageName}-${filepath}`);
 
 module.exports = {
     // 选项...
@@ -17,7 +18,11 @@ module.exports = {
                     attributes: {
                         id: injectSelector
                     },
-                    tagCode: require(`./${fileDir}/${pageName}-${filepath}`)
+                    tagCode: () => {
+                        return `
+                        ${tagCode}
+                        `
+                    }
                 }]
             }),
         ]
