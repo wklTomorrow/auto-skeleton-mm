@@ -1,5 +1,5 @@
 {
-  "name": "auto-skeleton@wang",
+  "name": "auto-skeleton",
   "version": "1.0.0",
   "description": "auto and inject skeleton",
   "main": "index.js",
