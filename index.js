@@ -1,10 +1,12 @@
 const fs = require('fs')
+const path = require('path')
 const minify = require('html-minifier').minify;
 const pp = require('./src/pp');
 const EvalDom = require('./src/evalDom')
 const base64Img = require('base64-img');
 const defaultEval = require('./src/default.html')
 const {Spinner, sleep} = require('./src/utils')
+const pluginName = 'AutoSkeletonPlugin'
 
 class AutoSkeleton {
     /**
@@ -23,9 +25,9 @@ class AutoSkeleton {
         const self = this
         if (compiler.hooks) {
             // webpack 4 support
-            compiler.hooks.compilation.tap('HtmlWebpackInlineCodePlugin', function (compilation) {
+            compiler.hooks.compilation.tap(pluginName, function (compilation) {
                 if (compilation.hooks.htmlWebpackPluginBeforeHtmlGeneration) {
-                    compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync('HtmlWebpackInlineCodePlugin', function (htmlPluginData, callback) {
+                    compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(pluginName, function (htmlPluginData, callback) {
                         self.processTags(htmlPluginData);
                         callback(null);
                     });
@@ -34,7 +36,7 @@ class AutoSkeleton {
                     var HtmlWebpackPlugin = require('html-webpack-plugin');
                     var hooks = HtmlWebpackPlugin.getHooks(compilation);
             
-                    hooks.alterAssetTagGroups.tapAsync('HtmlWebpackInlineCodePlugin', function (htmlPluginData, callback) {
+                    hooks.alterAssetTagGroups.tapAsync(pluginName, function (htmlPluginData, callback) {
                         self.processTags(htmlPluginData);
                         callback(null);
                     });
@@ -98,13 +100,14 @@ class AutoSkeleton {
     }
 
     async dealPage({page, options, spinner, browser}) {
-        const {pageName = '', output = {}, loadDestory, pageShowContain} = options
-        const {filepath, fileDir, injectSelector} = output
+        const { output = {}, loadDestory, pageShowContain, savePicture} = options
+        const {filename, fileDir, injectSelector} = output
         const defaultName = 'skeleton'
+        const defaultDir = path.join(__dirname, defaultName)
         spinner.text = '正在生成骨架屏...';
         await page.evaluate(EvalDom)
         if (!fileDir) {
-            fs.mkdirSync(defaultName, function(e) {
+            fs.mkdirSync(defaultDir, function(e) {
                 console.log(e)
             })
         } else if (!fs.existsSync(fileDir)) {
@@ -112,13 +115,20 @@ class AutoSkeleton {
                 console.log(e)
             })
         }
-        const defaultPage = `${fileDir}/${pageName || defaultName}-skeleton.png`
-        const defaultFile = `${fileDir}/${pageName || defaultName}-${filepath}`
+        const defaultPage = `${fileDir}/${filename || defaultName}-skeleton.png`
+        const defaultFile = [fileDir || defaultDir, '/', filename || defaultName, '.js'].join('')
         await page.screenshot({ path: defaultPage });
         const images = base64Img.base64Sync(defaultPage)
         const defaultHtml = defaultEval({images, injectSelector, loadDestory, pageShowContain})
         this.writeFile(defaultFile, defaultHtml)
         spinner.clear().succeed(`skeleton screen has created and output to ${fileDir}}`);
+        if (!savePicture && fs.existsSync(defaultPage)) {
+            fs.unlink(defaultPage, function (err) {
+                if (err) {
+                    return console.error(err)
+                }
+            })
+        }  
         await browser.browser.close();
         process.exit(0);
     }

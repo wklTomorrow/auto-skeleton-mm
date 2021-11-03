@@ -1,14 +1,18 @@
 {
-  "name": "auto-skeleton",
+  "name": "auto-skeleton@wang",
   "version": "1.0.0",
   "description": "auto and inject skeleton",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "kunlun",
   "license": "ISC",
   "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wklTomorrow/auto-skeleton.git"
+  },
   "dependencies": {
     "base64-img": "^1.0.4",
     "cheerio": "^1.0.0-rc.10",

@@ -2,9 +2,9 @@ const Skeleton = require('../../index')
 // const skeletonCode = require('./skeleton/index')
 const skeletonConfig = require('./skeleton.config')
 
-const {output, pageName = 'skeleton'} = skeletonConfig
-const {fileDir = 'skeleton', filepath = 'index.js', injectSelector} = output
-const tagCode = require(`./${fileDir}/${pageName}-${filepath}`);
+const {output} = skeletonConfig
+const {fileDir = './skeleton', filename = 'skeleton', injectSelector} = output
+const tagCode = require(`${fileDir}/${filename}.js`);
 
 module.exports = {
     // 选项...
@@ -18,11 +18,7 @@ module.exports = {
                     attributes: {
                         id: injectSelector
                     },
-                    tagCode: () => {
-                        return `
-                        ${tagCode}
-                        `
-                    }
+                    tagCode: tagCode
                 }]
             }),
         ]
