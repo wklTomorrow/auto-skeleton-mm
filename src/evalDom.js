@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(args) {
     const win_w = window.innerWidth
     const win_h = window.innerHeight
     class EvalDom {
@@ -65,7 +65,7 @@ module.exports = function() {
                             }
                         }
                         const tagName = node.tagName || ''
-                        if (_this.ELEMENT.includes(tagName.toLowerCase()) || _this.isCustomCardBlock(node) || backgroundHasurl || _this.isText(node) || hasChildText) {
+                        if (_this.ELEMENT.includes(tagName.toLowerCase()) || _this.isCustomCardBlock(node) || backgroundHasurl) {
                             const {left, top, height, width} = _this.getRect(node)
                             if (height > 0 && width > 0 && left >= 0 && left <= win_w && win_h - top >= 20 && top >= 0) {
                                 const {
@@ -95,8 +95,36 @@ module.exports = function() {
                                     _this.EXCLUDE.includes(eleTageName.toLowerCase()) && node.removeChild(ele)
                                 })
                             }
-                        } else if (childNodes && childNodes.length) {
-                            if (!hasChildText) {
+                        }
+                        else if (childNodes && childNodes.length) {
+                            if (childNodes.length === 1 && _this.isText(childNodes[0])) {
+                                let innerSpan = document.createElement('span')
+                                innerSpan.textContent = node.textContent
+                                const lineHeight = _this.getStyle(node, 'line-height')
+                                Object.assign(innerSpan.style, {
+                                    zIndex: 99,
+                                    lineHeight: lineHeight,
+                                    visibility: 'hidden'
+                                })
+                                Object.assign(node.style, {
+                                    color: _this.shadowColor,
+                                    backgroundImage: `linear-gradient(transparent 20%, ${_this.shadowColor} 0%, ${_this.shadowColor} 80%, transparent 0%)`,
+                                    backgroundSize: `100% ${lineHeight}`
+                                })
+                                if (node.parentNode.childNodes && node.parentNode.childNodes.length > 1) {
+                                    node.parentNode.style.backgroundColor =  _this.bgColors
+                                }
+                                node.replaceChild(innerSpan, node.childNodes[0])
+                            } else if (childNodes.length > 1 && hasChildText) {
+                                node.childNodes.forEach(n => {
+                                    if (n.nodeType === 3 && n.textContent) {
+                                        let spanElement = document.createElement('span')
+                                        spanElement.innerHTML = n.textContent
+                                        n.parentNode.replaceChild(spanElement, n)
+                                    }
+                                })
+                                deepFindNode(node.childNodes)
+                            } else if(!hasChildText) {
                                 deepFindNode(childNodes)
                             }
                         }
@@ -106,7 +134,7 @@ module.exports = function() {
             deepFindNode(dom.childNodes)
             return this.showBlock()
         }
-    
+
         getStyle(node, attr) {
             return (node.nodeType === 1 ? getComputedStyle(node)[attr] : '') || '';
         }

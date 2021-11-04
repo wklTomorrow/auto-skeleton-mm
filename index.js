@@ -8,6 +8,8 @@ const defaultEval = require('./src/default.html')
 const {Spinner, sleep} = require('./src/utils')
 const pluginName = 'AutoSkeletonPlugin'
 
+const cwd = process.cwd()
+
 class AutoSkeleton {
     /**
      * url
@@ -103,20 +105,22 @@ class AutoSkeleton {
         const { output = {}, loadDestory, pageShowContain, savePicture} = options
         const {filename, fileDir, injectSelector} = output
         const defaultName = 'skeleton'
-        const defaultDir = path.join(__dirname, defaultName)
+        const defaultDir = path.join(cwd, defaultName)
         spinner.text = '正在生成骨架屏...';
-        await page.evaluate(EvalDom)
         if (!fileDir) {
-            fs.mkdirSync(defaultDir, function(e) {
-                console.log(e)
-            })
+            if (!fs.existsSync(defaultDir)) {
+                fs.mkdirSync(defaultDir, function(e) {
+                    console.log(e)
+                })
+            }
         } else if (!fs.existsSync(fileDir)) {
             fs.mkdirSync(fileDir, function(e) {
                 console.log(e)
             })
         }
-        const defaultPage = `${fileDir}/${filename || defaultName}-skeleton.png`
-        const defaultFile = [fileDir || defaultDir, '/', filename || defaultName, '.js'].join('')
+        await page.evaluate.call(page, EvalDom)
+        const defaultPage = `${fileDir || defaultName}/${filename || defaultName}-skeleton.png`
+        const defaultFile = [fileDir || defaultName, '/', filename || defaultName, '.js'].join('')
         await page.screenshot({ path: defaultPage });
         const images = base64Img.base64Sync(defaultPage)
         const defaultHtml = defaultEval({images, injectSelector, loadDestory, pageShowContain})
