@@ -1,6 +1,6 @@
 {
   "name": "auto-skeleton-mm",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "auto and inject skeleton",
   "main": "index.js",
   "scripts": {
