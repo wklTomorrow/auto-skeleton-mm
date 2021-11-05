@@ -47,8 +47,8 @@ module.exports = function(args) {
         startDraw() {
             const dom = document.body
             let _this = this
-            console.log(dom)
-            function deepFindNode(nodes) {
+            const lastRender = []
+            function deepFindNode(nodes, zIndex) {
                 if (nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
                         const node = nodes[i]
@@ -63,6 +63,12 @@ module.exports = function(args) {
                                 hasChildText = true
                                 break
                             }
+                        }
+                        const pos = _this.getStyle(node, 'position')
+                        const position = ['fixed'].includes(pos)
+                        if (position) {
+                            lastRender.push(node)
+                            continue;
                         }
                         const tagName = node.tagName || ''
                         if (_this.ELEMENT.includes(tagName.toLowerCase()) || _this.isCustomCardBlock(node) || backgroundHasurl) {
@@ -89,6 +95,7 @@ module.exports = function(args) {
                                     left,
                                     radius: _this.getStyle(node, 'border-radius'),
                                     hasNoBorder: !hasNoBorder,
+                                    zIndex: zIndex
                                 })
                                 ;[...childNodes].map(ele => {
                                     const eleTageName = ele.tagName || ''
@@ -123,15 +130,25 @@ module.exports = function(args) {
                                         n.parentNode.replaceChild(spanElement, n)
                                     }
                                 })
-                                deepFindNode(node.childNodes)
+                                deepFindNode(node.childNodes, zIndex)
                             } else if(!hasChildText) {
-                                deepFindNode(childNodes)
+                                deepFindNode(childNodes, zIndex)
                             }
                         }
                     }
                 }
             }
             deepFindNode(dom.childNodes)
+            if (lastRender.length) {
+                lastRender.forEach(node => {
+                    Object.assign(node.style, {
+                        backgroundColor: _this.bgColors,
+                        zIndex: 9999
+                    })
+                    console.log(node, '222')
+                    deepFindNode(node.childNodes ? node.childNodes : [], 99999)
+                })
+            }
             return this.showBlock()
         }
 
@@ -173,7 +190,7 @@ module.exports = function(args) {
             }
         }
     
-        drawBlock({height, left, width, top, radius, hasNoBorder} = {}) {
+        drawBlock({height, left, width, top, radius, hasNoBorder, zIndex} = {}) {
             const styles = [
                 `height: ${height}px`,
                 `width: ${width}px`,
@@ -182,6 +199,7 @@ module.exports = function(args) {
             ]
             radius && radius !== '0px' && styles.push(`border-radius: ${radius}`)
             hasNoBorder && styles.push(`border: 1px solid #eee`)
+            zIndex && styles.push(`z-index: ${zIndex} !important`)
             this.blocks.push(`<div class="_" style="${styles.join(';')}"></div>`)
         }
     
