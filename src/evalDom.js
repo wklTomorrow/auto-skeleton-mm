@@ -1,4 +1,4 @@
-module.exports = function(args) {
+module.exports = function({backgroundColor, ignoreClass}) {
     const win_w = window.innerWidth
     const win_h = window.innerHeight
     class EvalDom {
@@ -17,7 +17,7 @@ module.exports = function(args) {
                 // 'audio', 'button', 'canvas', 'code', 'IMG', 'input', 'pre', 'svg', 'textarea', 'video', 'xmp'
             ]
         
-            this.shadowColor = '#EEEFF7'
+            this.shadowColor = backgroundColor || '#EEEFF7'
         
             this.bgColors = '#fff'
         

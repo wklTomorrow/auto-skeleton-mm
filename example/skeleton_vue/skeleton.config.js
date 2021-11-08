@@ -1,11 +1,12 @@
 module.exports = {
-    // url: 'https://www.baidu.com',
+    url: 'https://www.baidu.com',
     output: {
-        filename: 'baidu-index',
+        filename: 'mm-index',
         // filepath: '/Users/maimai/Desktop/maimai/skeleton/index.html',
-        fileDir: './vue-skeleton',
+        fileDir: './mm-skeleton',
         injectSelector: 'skeleton'
     },
+    backgroundColor: '#666666',
     sleepTime: 500,
     loadDestory: false,
     device: 'mobile',

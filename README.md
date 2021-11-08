@@ -17,6 +17,7 @@
 |extraHTTPHeaders|请求时带的参数|false|
 |savePicture|保存生成的骨架图片|false|
 |pageShowContain|骨架屏展示的设备|['mobile', 'pc']|
+|backgroundColor|骨架屏生成内容区域的背景色|false|
 
 #### use:
 
