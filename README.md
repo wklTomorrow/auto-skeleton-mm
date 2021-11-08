@@ -22,7 +22,24 @@
 #### use:
 
 ```javascript
-const skeleton = require('auto-skeleton@wang')
+const skeleton = require('auto-skeleton-mm')
+const skeletonConfig = {
+    url: 'https://www.baidu.com',
+    output: {
+        filename: 'mm-index',
+        fileDir: './mm-skeleton',
+        injectSelector: 'skeleton'
+    },
+    backgroundColor: '#666666',
+    sleepTime: 500,
+    loadDestory: false,
+    device: 'mobile',
+    extraHTTPHeaders: {
+        cookie: ''
+    },
+    savePicture: true,
+    pageShowContain: ['mobile'], // mobile, pc
+}
 new Skeleton().init(
     skeletonConfig
 )
@@ -30,7 +47,7 @@ new Skeleton().init(
 #### 生成代码自动注入：
 
 ```javascript
-const Skeleton = require('auto-skeleton@wang')
+const Skeleton = require('auto-skeleton-mm')
 ...
 plugins: [
   new Skeleton({
