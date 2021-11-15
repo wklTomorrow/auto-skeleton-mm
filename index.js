@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const cheerio = require('cheerio');
 const minify = require('html-minifier').minify;
 const pp = require('./src/pp');
 const EvalDom = require('./src/evalDom')
@@ -91,7 +92,7 @@ class AutoSkeleton {
     }
 
     async init(options = {}) {
-        const {headless = true, url, device, sleepTime = 100, extraHTTPHeaders} = options
+        const {headless = false, url, device, sleepTime = 100, extraHTTPHeaders} = options
         const spinner = Spinner('magentaBright');
         spinner.text = '启动浏览器...';
         const browser = await pp({device, headless})
@@ -102,7 +103,15 @@ class AutoSkeleton {
     }
 
     async dealPage({page, options, spinner, browser}) {
-        const { output = {}, loadDestory, pageShowContain, savePicture, backgroundColor, ignoreClass} = options
+        const { 
+            output = {},
+            loadDestory,
+            pageShowContain,
+            savePicture,
+            backgroundColor,
+            ignoreClass,
+            lineHeight
+        } = options
         const {filename, fileDir, injectSelector} = output
         const defaultName = 'skeleton'
         const defaultDir = path.join(cwd, defaultName)
@@ -118,15 +127,17 @@ class AutoSkeleton {
                 console.log(e)
             })
         }
-        await page.evaluate.call(page, EvalDom, {
+        const skeletonDom = await page.evaluate.call(page, EvalDom, {
             backgroundColor,
-            ignoreClass
+            ignoreClass,
+            lineHeight
         })
         const defaultPage = `${fileDir || defaultName}/${filename || defaultName}-skeleton.png`
         const defaultFile = [fileDir || defaultName, '/', filename || defaultName, '.js'].join('')
         await page.screenshot({ path: defaultPage });
-        const images = base64Img.base64Sync(defaultPage)
-        const defaultHtml = defaultEval({images, injectSelector, loadDestory, pageShowContain})
+        base64Img.base64Sync(defaultPage)
+        const defaultHtml = defaultEval({skeletonDom, injectSelector, loadDestory, pageShowContain})
+
         this.writeFile(defaultFile, defaultHtml)
         spinner.clear().succeed(`skeleton screen has created and output to ${fileDir}}`);
         if (!savePicture && fs.existsSync(defaultPage)) {
@@ -136,12 +147,21 @@ class AutoSkeleton {
                 }
             })
         }  
-        await browser.browser.close();
-        process.exit(0);
+        // await browser.browser.close();
+        // process.exit(0);
     }
-
+    
+    writeToFilepath(filepath, html) {
+        let fileHTML = fs.readFileSync(filepath);
+        let $ = cheerio.load(fileHTML, {
+          decodeEntities: false
+        });
+        $(this.injectSelector).html(html);
+        fs.writeFileSync(filepath, $.html('html'));
+    }
     writeFile(filepath, html) {
         try {
+            // fs.writeFileSync(filepath, html)
             fs.writeFileSync(filepath, minify(`module.exports = \`${html}\``, {
                 minifyCSS: true,
                 minifyJS: true,

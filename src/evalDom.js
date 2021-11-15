@@ -22,106 +22,256 @@ module.exports = function({backgroundColor, ignoreClass}) {
             this.bgColors = '#fff'
         
             this.EXCLUDE = [
-                'i'
+                'i',
+                'script',
+                'style'
             ]
             this.options = options
             this.blocks = []
-            const classProp = {
-                position: 'fixed',
-                background: this.shadowColor,
-                zIndex: 999
-            }
-            this.createCommonClass(classProp)
         }
     
-        createCommonClass(props) {
-            const inlineStyle = ['<style>body{overflow:hidden}._{'];
-            for(let prop in props) {
-                inlineStyle.push(`${prop === 'zIndex'? 'z-index': prop}:${props[prop]};`);
+        getNodeStyle(node) {
+            const {
+                backgroundColor,
+                border,
+                borderTop,
+                borderBottom,
+                borderLeft,
+                borderRight,
+                borderRadius,
+                display,
+                zIndex,
+                flex,
+                flexDirection,
+                alignItems,
+                justifyContent,
+            } = getComputedStyle(node)
+            return {
+                'background-color': backgroundColor,
+                border,
+                'border-top': borderTop,
+                'border-bottom': borderBottom,
+                'border-left': borderLeft,
+                'border-right': borderRight,
+                'border-radius': borderRadius,
+                display,
+                flex,
+                'flex-direction': flexDirection,
+                'align-items': alignItems,
+                'justify-content': justifyContent,
             }
-            inlineStyle.push('}</style>');
-            // inlineStyle.push('}.__{top:0%;left:0%;width:100%;}</style>');
-            this.blocks.push(inlineStyle.join(''))
         }
-    
+
+        getComputedStyleMap(node, attr = []) {
+            let attrs = {}
+            if (Array.isArray(attr)) {
+                attr.forEach(a => {
+                    let {unit, value = 0} = node.computedStyleMap().get(a)
+                    if (unit === 'percent') {
+                        attrs[a] = value.toFixed(2) + '%'
+                    }
+                    if (unit === 'px') {
+                        attrs[a] = value.toFixed(2) + unit
+                    }
+                    if (!unit) {
+                        attrs[a] = value
+                    }
+                })
+            } else {
+                let {unit, value = 0} = node.computedStyleMap().get(attr)
+                if (unit === 'precent') {
+                    attrs[attr] = value.toFixed(2) + '%'
+                }
+                if (unit === 'px') {
+                    attrs[attr] = value.toFixed(2) + unit
+                }
+                if (!unit) {
+                    attrs[a] = value
+                }
+            }
+            return attrs
+        }
+        
+        filterNodeDefaultStyle(attrs, defaultFilter, tagName) {
+            let attrsObj = {}
+            let filterTemplate = {
+                position: 'static',
+                'background-color': 'rgba(0, 0, 0, 0)',
+                'border-radius': '0px',
+                'border': '0px',
+                'border-top': '0px',
+                'border-bottom': '0px',
+                'border-left': '0px',
+                'border-right': '0px',
+                'min-width': ['0.00px', 'auto', 'none'],
+                'width': ['0.00px', 'auto', 'none'],
+                'height': ['0.00px', 'auto', 'none'],
+                'max-width': ['0.00px', 'auto', 'none'],
+                'min-height': ['0.00px', 'auto', 'none'],
+                'max-height': ['0.00px', 'auto', 'none'],
+                // display: 'block',
+                'z-index': 'auto',
+                flex: '0 1 auto',
+                'flex-direction': 'row',
+                'align-items': 'normal',
+                'justify-content': 'normal',
+                'margin-top': '0',
+                'margin-left': '0',
+                'margin-bottom': '0',
+                'margin-right': '0',
+                'padding-left': '0',
+                'padding-right': '0',
+                'padding-bottom': '0',
+                'padding-top': '0',
+                left: 'auto',
+                top: 'auto',
+                right: 'auto',
+                bottom: 'auto',
+                margin: '0',
+                padding: '0'
+            }
+            let displays = {
+                div: 'block',
+                span: 'inline'
+            }
+            let keys = Object.keys(attrs) || []
+            let tags = tagName && tagName.toLowerCase()
+            let filterObj = defaultFilter || filterTemplate
+            keys.forEach(key => {
+                let keysStr = this.toCamelCaseStr(key) || ''
+                if (Array.isArray(filterObj[keysStr])) {
+                    if (!filterObj[keysStr].includes(attrs[key])) {
+                        attrsObj[key] = attrs[key]
+                    }
+                } else if ((attrs[key] && !attrs[key].startsWith(filterObj[keysStr]))) {
+                    attrsObj[key] = attrs[key]
+                }
+            })
+            if (Object.keys(displays).includes(tags)) {
+                if (attrs.display && attrs.display === displays[tags]) {
+                    delete attrsObj.display
+                }
+            }
+            return attrsObj
+        }
+
+        toCamelCaseStr(str = '') {
+            return str.replace(/([A-Z])/g, function(r) {
+                return `-${r.toLocaleLowerCase()}`
+            })
+        }
+
+        copyObjFromOtherObjAttr(taget, ...styles) {
+            styles.forEach(style => {
+                Object.assign(taget, {
+                    ...style
+                })
+            })
+        }
+
         startDraw() {
             const dom = document.body
             let _this = this
-            const lastRender = []
-            function deepFindNode(nodes, zIndex) {
+            const rootNode = document.createElement('div')
+            rootNode.setAttribute('id', 'skeleton-view')
+            function deepFindNode(nodes, root) {
                 if (nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
                         const node = nodes[i]
-                        if (_this.isHideStyle(node)) continue
                         let childNodes = node.childNodes || []
-                        let hasChildText = false
+                        if (_this.isHideStyle(node)) continue
+                        let nodeCopy
+                        const nodeCopyTagName = node.tagName || ''
                         let background = _this.getStyle(node, 'backgroundImage');
                         let backgroundHasurl = background.match(/url\(.+?\)/);
                         backgroundHasurl = backgroundHasurl && backgroundHasurl.length;
+                        let hasChildText = false
                         for (let j = 0; j < childNodes.length; j++) {
                             if (_this.isText(childNodes[j])) {
                                 hasChildText = true
                                 break
                             }
                         }
-                        const pos = _this.getStyle(node, 'position')
-                        const position = ['fixed'].includes(pos)
-                        if (position) {
-                            lastRender.push(node)
-                            continue;
-                        }
-                        const tagName = node.tagName || ''
-                        if (_this.ELEMENT.includes(tagName.toLowerCase()) || _this.isCustomCardBlock(node) || backgroundHasurl) {
-                            const {left, top, height, width} = _this.getRect(node)
-                            if (height > 0 && width > 0 && left >= 0 && left <= win_w && win_h - top >= 20 && top >= 0) {
-                                const {
-                                    paddingTop,
-                                    paddingBottom,
-                                    paddingLeft,
-                                    paddingRight,
-                                    boxSizing
-                                } = _this.getPadding(node)
-                                const bdReg = /(0px)|(none)/;
-                                const hasNoBorder = ['top', 'left', 'right', 'bottom'].some(item => {
-                                    return bdReg.test(_this.getStyle(node, 'border-' + item));
-                                  });
-                                  !hasNoBorder && (node.style.borderColor = _this.shadowColor)
-                                node.style.color = _this.bgColors
-                                node.style.background = _this.bgColors
-                                _this.drawBlock({
-                                    top,
-                                    width: boxSizing ? width : width - paddingLeft - paddingRight,
-                                    height: boxSizing ? height : height - paddingTop - paddingBottom,
-                                    left,
-                                    radius: _this.getStyle(node, 'border-radius'),
-                                    hasNoBorder: !hasNoBorder,
-                                    zIndex: zIndex
-                                })
-                                ;[...childNodes].map(ele => {
-                                    const eleTageName = ele.tagName || ''
-                                    _this.EXCLUDE.includes(eleTageName.toLowerCase()) && node.removeChild(ele)
+                        if (!_this.EXCLUDE.includes(nodeCopyTagName.toLowerCase()) && node.tagName) {
+                            nodeCopy = document.createElement(nodeCopyTagName.toLowerCase() === 'img' ? 'div' : nodeCopyTagName )
+                            let attrs = _this.getComputedStyleMap(node, [
+                                'width',
+                                'max-width',
+                                'min-width',
+                                'height',
+                                'max-height',
+                                'min-height',
+                                'margin',
+                                'margin-top',
+                                'margin-left',
+                                'margin-bottom',
+                                'margin-right',
+                                'padding',
+                                'padding-left',
+                                'padding-right',
+                                'padding-bottom',
+                                'padding-top',
+                                'left',
+                                'top',
+                                'right',
+                                'bottom',
+                                'position',
+                                'z-index'
+                            ])
+                            _this.copyObjFromOtherObjAttr(nodeCopy.style, {
+                                ..._this.filterNodeDefaultStyle({
+                                    ..._this.getNodeStyle(node),
+                                }, null, nodeCopy.tagName)
+                            }, {
+                                ..._this.filterNodeDefaultStyle(attrs, null, nodeCopy.tagName)
+                            })
+                            // 处理图片
+                            if (nodeCopyTagName.toLowerCase() === 'img' ) {
+                                _this.copyObjFromOtherObjAttr(nodeCopy.style, {
+                                    border: '0px',
+                                    display: 'block',
+                                    margin: '0 auto'
                                 })
                             }
+                            if (_this.getStyle(node, 'position') === 'fixed') {
+                               nodeCopy.style.background = _this.bgColors
+                            }
+                            if (root) {
+                                root.appendChild(nodeCopy)
+                            }
                         }
-                        else if (childNodes && childNodes.length) {
+                        if (nodeCopy && (_this.ELEMENT.includes(nodeCopyTagName.toLowerCase()) || _this.isCustomCardBlock(node) || backgroundHasurl)) {
+                            _this.copyObjFromOtherObjAttr(nodeCopy.style, {
+                                background: _this.shadowColor,
+                                color: _this.bgColors,
+                                border: '0px'
+                            })
+                        } else if (nodeCopy && childNodes && childNodes.length) {
                             if (childNodes.length === 1 && _this.isText(childNodes[0])) {
                                 let innerSpan = document.createElement('span')
                                 innerSpan.textContent = node.textContent
                                 const lineHeight = _this.getStyle(node, 'line-height')
-                                Object.assign(innerSpan.style, {
-                                    zIndex: 99,
-                                    lineHeight: lineHeight,
+                                let height = _this.getStyle(node, 'height')
+                                _this.copyObjFromOtherObjAttr(innerSpan.style, {
                                     visibility: 'hidden'
                                 })
-                                Object.assign(node.style, {
-                                    color: _this.shadowColor,
-                                    backgroundImage: `linear-gradient(transparent 20%, ${_this.shadowColor} 0%, ${_this.shadowColor} 80%, transparent 0%)`,
-                                    backgroundSize: `100% ${lineHeight}`
-                                })
-                                if (node.parentNode.childNodes && node.parentNode.childNodes.length > 1) {
-                                    node.parentNode.style.backgroundColor =  _this.bgColors
+                                if (parseInt(height) / parseInt(lineHeight) > 1.1) {
+                                    _this.copyObjFromOtherObjAttr(nodeCopy.style, {
+                                        height: _this.getStyle(node, 'height'),
+                                        backgroundImage: `linear-gradient(transparent 20%, ${_this.shadowColor} 0%, ${_this.shadowColor} 80%, transparent 0%)`,
+                                        backgroundSize: `100% ${lineHeight}`
+                                    })
+                                } else {
+                                    _this.copyObjFromOtherObjAttr(nodeCopy.style, {
+                                        height: _this.getStyle(node, 'font-size'),
+                                        backgroundColor: _this.shadowColor,
+                                        fontSize: _this.getStyle(node, 'font-size')
+                                    })
                                 }
-                                node.replaceChild(innerSpan, node.childNodes[0])
+                                if (node.parentNode.childNodes && node.parentNode.childNodes.length > 1) {
+                                    nodeCopy.parentNode.style.backgroundColor =  _this.bgColors
+                                }
+                                nodeCopy.appendChild(innerSpan)
                             } else if (childNodes.length > 1 && hasChildText) {
                                 node.childNodes.forEach(n => {
                                     if (n.nodeType === 3 && n.textContent) {
@@ -130,26 +280,22 @@ module.exports = function({backgroundColor, ignoreClass}) {
                                         n.parentNode.replaceChild(spanElement, n)
                                     }
                                 })
-                                deepFindNode(node.childNodes, zIndex)
+                                deepFindNode(node.childNodes, nodeCopy)
                             } else if(!hasChildText) {
-                                deepFindNode(childNodes, zIndex)
+                                deepFindNode(node.childNodes, nodeCopy)
                             }
                         }
                     }
                 }
             }
-            deepFindNode(dom.childNodes)
-            if (lastRender.length) {
-                lastRender.forEach(node => {
-                    Object.assign(node.style, {
-                        backgroundColor: _this.bgColors,
-                        zIndex: 9999
-                    })
-                    console.log(node, '222')
-                    deepFindNode(node.childNodes ? node.childNodes : [], 99999)
-                })
-            }
-            return this.showBlock()
+            deepFindNode(dom.childNodes, rootNode)
+            const childs = document.body.childNodes
+            // 替换之前的 body
+            ;[...childs].forEach(n => {
+                document.body.removeChild(n)
+            })
+            document.body.appendChild(rootNode)
+            return rootNode;
         }
 
         getStyle(node, attr) {
@@ -180,39 +326,6 @@ module.exports = function({backgroundColor, ignoreClass}) {
             return customCardBlock;
         }
     
-        showBlock() {
-            if (this.blocks.length) {
-                const blockHtml = this.blocks.join('');
-                const div = document.createElement('div');
-                div.innerHTML = blockHtml
-                document.body.appendChild(div)
-                return blockHtml
-            }
-        }
-    
-        drawBlock({height, left, width, top, radius, hasNoBorder, zIndex} = {}) {
-            const styles = [
-                `height: ${height}px`,
-                `width: ${width}px`,
-                `left: ${left}px`,
-                `top: ${top}px`,
-            ]
-            radius && radius !== '0px' && styles.push(`border-radius: ${radius}`)
-            hasNoBorder && styles.push(`border: 1px solid #eee`)
-            zIndex && styles.push(`z-index: ${zIndex} !important`)
-            this.blocks.push(`<div class="_" style="${styles.join(';')}"></div>`)
-        }
-    
-        getPadding(node) {
-            return {
-                paddingBottom: parseInt(this.getStyle(node, 'padding-bottom')),
-                paddingLeft: parseInt(this.getStyle(node, 'padding-left')),
-                paddingTop: parseInt(this.getStyle(node, 'padding-top')),
-                paddingRight: parseInt(this.getStyle(node, 'padding-right')),
-                boxSizing: this.getStyle(node, 'box-sizing') === 'border-box'
-            }
-        }
-    
         getRect(node) {
             if (node) {
                 const {left, top, height, width} = node.getBoundingClientRect();
@@ -224,7 +337,7 @@ module.exports = function({backgroundColor, ignoreClass}) {
     return new Promise((resolve, reject) => {
         try {
             const html = new EvalDom().startDraw()
-            resolve(html)
+            resolve(document.body.innerHTML)
         } catch (e) {
             reject(e)
         }
