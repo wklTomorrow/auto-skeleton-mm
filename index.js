@@ -92,7 +92,7 @@ class AutoSkeleton {
     }
 
     async init(options = {}) {
-        const {headless = false, url, device, sleepTime = 100, extraHTTPHeaders} = options
+        const {headless = true, url, device, sleepTime = 100, extraHTTPHeaders} = options
         const spinner = Spinner('magentaBright');
         spinner.text = '启动浏览器...';
         const browser = await pp({device, headless})
@@ -147,8 +147,8 @@ class AutoSkeleton {
                 }
             })
         }  
-        // await browser.browser.close();
-        // process.exit(0);
+        await browser.browser.close();
+        process.exit(0);
     }
     
     writeToFilepath(filepath, html) {
