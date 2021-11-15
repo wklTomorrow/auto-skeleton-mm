@@ -193,7 +193,7 @@ module.exports = function({backgroundColor, ignoreClass}) {
                             }
                         }
                         if (!_this.EXCLUDE.includes(nodeCopyTagName.toLowerCase()) && node.tagName) {
-                            nodeCopy = document.createElement(nodeCopyTagName.toLowerCase() === 'img' ? 'div' : nodeCopyTagName )
+                            nodeCopy = document.createElement(nodeCopyTagName.toLowerCase() === 'img' ? 'span' : nodeCopyTagName )
                             let attrs = _this.getComputedStyleMap(node, [
                                 'width',
                                 'max-width',
@@ -227,11 +227,16 @@ module.exports = function({backgroundColor, ignoreClass}) {
                             })
                             // 处理图片
                             if (nodeCopyTagName.toLowerCase() === 'img' ) {
+                                const textAlign = _this.getStyle(node.parentNode, 'text-align');
+                                if (node.parentNode.tagName === 'A') {
+                                    console.log(textAlign, nodeCopy)
+                                }
                                 _this.copyObjFromOtherObjAttr(nodeCopy.style, {
                                     border: '0px',
                                     display: 'block',
+                                }, textAlign === 'center' ? {
                                     margin: '0 auto'
-                                })
+                                } : {})
                             }
                             if (_this.getStyle(node, 'position') === 'fixed') {
                                nodeCopy.style.background = _this.bgColors

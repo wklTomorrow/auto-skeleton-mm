@@ -12,7 +12,7 @@ module.exports = {
     device: 'mobile',
     lineHeight: 24,
     extraHTTPHeaders: {
-        cookie: '',
+        cookie: ''
     },
     savePicture: true,
     pageShowContain: ['mobile'], // mobile, pc
