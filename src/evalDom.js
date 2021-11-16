@@ -169,11 +169,19 @@ module.exports = function({backgroundColor, ignoreClass}) {
             })
         }
 
+        setAttributes(node, attrs) {
+            Object.keys(attrs).forEach(key => {
+                node.setAttribute(key, attrs[key])
+            })
+        }
+
         startDraw() {
             const dom = document.body
             let _this = this
             const rootNode = document.createElement('div')
-            rootNode.setAttribute('id', 'skeleton-view')
+            _this.setAttributes(rootNode, {
+                id: 'skeleton-view',
+            })
             function deepFindNode(nodes, root) {
                 if (nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
@@ -228,9 +236,6 @@ module.exports = function({backgroundColor, ignoreClass}) {
                             // 处理图片
                             if (nodeCopyTagName.toLowerCase() === 'img' ) {
                                 const textAlign = _this.getStyle(node.parentNode, 'text-align');
-                                if (node.parentNode.tagName === 'A') {
-                                    console.log(textAlign, nodeCopy)
-                                }
                                 _this.copyObjFromOtherObjAttr(nodeCopy.style, {
                                     border: '0px',
                                     display: 'block',
@@ -255,22 +260,27 @@ module.exports = function({backgroundColor, ignoreClass}) {
                             if (childNodes.length === 1 && _this.isText(childNodes[0])) {
                                 let innerSpan = document.createElement('span')
                                 innerSpan.textContent = node.textContent
-                                const lineHeight = _this.getStyle(node, 'line-height')
-                                let height = _this.getStyle(node, 'height')
+                                // const lineHeight = _this.getStyle(node, 'line-height')
+                                // let height = _this.getStyle(node, 'height')
+                                let {
+                                    lineHeight,
+                                    height
+                                } = _this.getStyles(node, ['line-height', 'height'])
                                 _this.copyObjFromOtherObjAttr(innerSpan.style, {
                                     visibility: 'hidden'
                                 })
                                 if (parseInt(height) / parseInt(lineHeight) > 1.1) {
                                     _this.copyObjFromOtherObjAttr(nodeCopy.style, {
-                                        height: _this.getStyle(node, 'height'),
+                                        height,
                                         backgroundImage: `linear-gradient(transparent 20%, ${_this.shadowColor} 0%, ${_this.shadowColor} 80%, transparent 0%)`,
                                         backgroundSize: `100% ${lineHeight}`
                                     })
                                 } else {
+                                    const fontHeight = _this.getStyle(node, 'font-size')
                                     _this.copyObjFromOtherObjAttr(nodeCopy.style, {
-                                        height: _this.getStyle(node, 'font-size'),
+                                        height: fontHeight,
                                         backgroundColor: _this.shadowColor,
-                                        fontSize: _this.getStyle(node, 'font-size')
+                                        fontSize: fontHeight
                                     })
                                 }
                                 if (node.parentNode.childNodes && node.parentNode.childNodes.length > 1) {
@@ -306,11 +316,24 @@ module.exports = function({backgroundColor, ignoreClass}) {
         getStyle(node, attr) {
             return (node.nodeType === 1 ? getComputedStyle(node)[attr] : '') || '';
         }
+
+        getStyles(node, attrs = []) {
+            const attrsResult = {}
+            attrs.forEach(attr => {
+                attrsResult[attr] = this.getStyle(node, attr)
+            })
+            return attrsResult
+        }
     
         isHideStyle(node) {
-            return this.getStyle(node, 'display') === 'none' || 
-                this.getStyle(node, 'visibility') === 'hidden' || 
-                this.getStyle(node, 'opacity') == 0 ||
+            const {display, visibility, opacity} = this.getStyles(node, [
+                'display',
+                'visibility',
+                'opacity'
+            ])
+            return display === 'none' || 
+                visibility === 'hidden' || 
+                opacity == 0 ||
                 node.hidden;
         }
     
