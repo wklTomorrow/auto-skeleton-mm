@@ -92,7 +92,7 @@ class AutoSkeleton {
     }
 
     async init(options = {}) {
-        const {headless = true, url, device, sleepTime = 100, extraHTTPHeaders} = options
+        const {headless = true, url, device, sleepTime = 100, extraHTTPHeaders,} = options
         const spinner = Spinner('magentaBright');
         spinner.text = '启动浏览器...';
         const browser = await pp({device, headless})
@@ -110,7 +110,8 @@ class AutoSkeleton {
             savePicture,
             backgroundColor,
             ignoreClass,
-            lineHeight
+            lineHeight,
+            createAll
         } = options
         const {filename, fileDir, injectSelector} = output
         const defaultName = 'skeleton'
@@ -130,7 +131,8 @@ class AutoSkeleton {
         const skeletonDom = await page.evaluate.call(page, EvalDom, {
             backgroundColor,
             ignoreClass,
-            lineHeight
+            lineHeight,
+            createAll
         })
         const defaultPage = `${fileDir || defaultName}/${filename || defaultName}-skeleton.png`
         const defaultFile = [fileDir || defaultName, '/', filename || defaultName, '.js'].join('')

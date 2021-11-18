@@ -14,6 +14,7 @@ module.exports = {
     extraHTTPHeaders: {
         cookie: ''
     },
+    createAll: false,
     savePicture: true,
     pageShowContain: ['mobile'], // mobile, pc
 }

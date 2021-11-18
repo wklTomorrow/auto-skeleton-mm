@@ -1,4 +1,4 @@
-module.exports = function({backgroundColor, ignoreClass}) {
+module.exports = function({backgroundColor, ignoreClass, lineHeight, createAll}) {
     const win_w = window.innerWidth
     const win_h = window.innerHeight
     class EvalDom {
@@ -194,6 +194,10 @@ module.exports = function({backgroundColor, ignoreClass}) {
                 if (nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
                         const node = nodes[i]
+                        const {offsetTop} = node
+                        if (!createAll && offsetTop && offsetTop > win_h * 1.4) {
+                            continue
+                        }
                         let childNodes = node.childNodes || []
                         if (_this.isHideStyle(node)) continue
                         let nodeCopy
@@ -273,10 +277,11 @@ module.exports = function({backgroundColor, ignoreClass}) {
                                 let {
                                     lineHeight,
                                     height
-                                } = _this.getStyles(node, ['line-height', 'height'])
+                                } = _this.getStyles(node, ['lineHeight', 'height'])
                                 _this.copyObjFromOtherObjAttr(innerSpan.style, {
                                     visibility: 'hidden'
                                 })
+                                console.log(node, nodeCopy, lineHeight, height)
                                 if (parseInt(height) / parseInt(lineHeight) > 1.1) {
                                     _this.copyObjFromOtherObjAttr(nodeCopy.style, {
                                         height,
