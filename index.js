@@ -134,7 +134,7 @@ class AutoSkeleton {
             lineHeight,
             createAll
         })
-        const defaultPage = `${fileDir || defaultName}/${filename || defaultName}-skeleton.png`
+        const defaultPage = `${fileDir || defaultName}/${filename || defaultName}.png`
         const defaultFile = [fileDir || defaultName, '/', filename || defaultName, '.js'].join('')
         await page.screenshot({ path: defaultPage });
         base64Img.base64Sync(defaultPage)
