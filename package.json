@@ -1,6 +1,6 @@
 {
   "name": "auto-skeleton-mm",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "auto and inject skeleton",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "base64-img": "^1.0.4",
-    "cheerio": "^1.0.0-rc.10",
     "html-minifier": "^4.0.0",
     "ora": "^3.0.0",
     "puppeteer": "^1.4.0"

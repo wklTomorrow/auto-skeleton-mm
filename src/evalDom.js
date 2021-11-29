@@ -1,4 +1,4 @@
-module.exports = function({backgroundColor, ignoreClass, lineHeight, createAll}) {
+module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights, createAll}) {
     const win_w = window.innerWidth
     const win_h = window.innerHeight
     class EvalDom {
@@ -281,12 +281,11 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight, createAll})
                                 _this.copyObjFromOtherObjAttr(innerSpan.style, {
                                     visibility: 'hidden'
                                 })
-                                console.log(node, nodeCopy, lineHeight, height)
                                 if (parseInt(height) / parseInt(lineHeight) > 1.1) {
                                     _this.copyObjFromOtherObjAttr(nodeCopy.style, {
                                         height,
                                         backgroundImage: `linear-gradient(transparent 20%, ${_this.shadowColor} 0%, ${_this.shadowColor} 80%, transparent 0%)`,
-                                        backgroundSize: `100% ${lineHeight}`
+                                        backgroundSize: `100% ${lineHeights || lineHeight}`
                                     })
                                 } else {
                                     const fontHeight = _this.getStyle(node, 'font-size')

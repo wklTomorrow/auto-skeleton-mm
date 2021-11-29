@@ -1,19 +1,28 @@
 module.exports = {
+    multyUrls: [
+        {
+            url: 'https://www.baidu.com',
+            filename: 'baidu-index',
+            extraHTTPHeaders: {},
+            injectSelector: ''
+        },
+        {
+            url: 'https://www.google.com/',
+            filename: 'chrome-index',
+            extraHTTPHeaders: {},
+            injectSelector: ''
+        }
+    ],
     url: 'https://www.baidu.com',
-    output: {
-        filename: 'baidu-index',
-        // filepath: '/Users/maimai/Desktop/maimai/skeleton/index.html',
-        fileDir: './baidu-skeleton',
-        injectSelector: 'skeleton'
-    },
+    filename: 'baidu-index',
+    fileDir: './baidu-skeleton',
+    injectSelector: 'skeleton',
     backgroundColor: '#EEEFF7',
     sleepTime: 500,
     loadDestory: false,
     device: 'mobile',
-    lineHeight: 24,
-    extraHTTPHeaders: {
-        cookie: ''
-    },
+    lineHeight: 22,
+    disabledScript: true,
     createAll: false,
     savePicture: true,
     pageShowContain: ['mobile'], // mobile, pc

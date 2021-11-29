@@ -1,4 +1,4 @@
-module.exports = function ({skeletonDom, injectSelector, loadDestory, pageShowContain}) {
+module.exports = function ({skeletonDom, injectSelector, loadDestory, pageShowContain, disabledScript}) {
     return `
         <div id="${injectSelector}">
             <style>
@@ -33,6 +33,7 @@ module.exports = function ({skeletonDom, injectSelector, loadDestory, pageShowCo
             </style>
             <div class="skeleton-shadow"></div>
             ${skeletonDom}
+            ${disabledScript ? '' : `
             <script>
             ${loadDestory ? `window.addEventListener('load', function(){
                 setTimeout(function(){
@@ -73,6 +74,7 @@ module.exports = function ({skeletonDom, injectSelector, loadDestory, pageShowCo
                     }
                 }
             </script>
+            `}
         </div>
     `
 }

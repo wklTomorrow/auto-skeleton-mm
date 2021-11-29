@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const cheerio = require('cheerio');
 const minify = require('html-minifier').minify;
 const pp = require('./src/pp');
 const EvalDom = require('./src/evalDom')
@@ -92,17 +91,58 @@ class AutoSkeleton {
     }
 
     async init(options = {}) {
-        const {headless = true, url, device, sleepTime = 100, extraHTTPHeaders,} = options
+        const {
+            headless = true, url, device, sleepTime = 100, extraHTTPHeaders, multyUrls,
+            filename, fileDir, disabledScript = false
+        } = options
         const spinner = Spinner('magentaBright');
         spinner.text = '启动浏览器...';
         const browser = await pp({device, headless})
-        spinner.text = `正在打开页面：${url}...`;
-        const page = await browser.openPage(url, extraHTTPHeaders)
-        await sleep(sleepTime)
-        await this.dealPage({page, options, spinner, browser});
+        const targetSkeletonUrl = multyUrls && Array.isArray(multyUrls) ? multyUrls : [{
+            url: url,
+            filename: filename
+        }]
+        this.createSkeleton({
+            targetSkeletonUrl: targetSkeletonUrl.map(skeleton => ({
+                ...skeleton,
+                fileDir: fileDir,
+                disabledScript: targetSkeletonUrl.disabledScript || disabledScript
+            })),
+            spinner,
+            sleepTime,
+            extraHTTPHeaders,
+            options,
+            browser,
+        })
     }
 
-    async dealPage({page, options, spinner, browser}) {
+    async createSkeleton({
+        targetSkeletonUrl,
+        spinner,
+        sleepTime,
+        options,
+        browser,
+    }) {
+        for await (let urls of targetSkeletonUrl) {
+            spinner.text = `正在打开页面：${urls.url}...`;
+            const page = await browser.openPage(urls.url, urls.extraHTTPHeaders)
+            await sleep(sleepTime)
+            await this.dealPage({
+                page,
+                options: {...options, output: {
+                    ...urls,
+                    injectSelector: urls.injectSelector || options.injectSelector || 'skeleton',
+                    disabledScript: urls.disabledScript
+                }},
+                spinner
+            });
+        }
+        spinner.clear().succeed(`skeleton screen has created and output to ${targetSkeletonUrl[0].fileDir}}`);
+        await browser.browser.close();
+        process.exit(0);
+    }
+
+    async dealPage({page, options, spinner}) {
         const { 
             output = {},
             loadDestory,
@@ -111,7 +151,8 @@ class AutoSkeleton {
             backgroundColor,
             ignoreClass,
             lineHeight,
-            createAll
+            createAll,
+            disabledScript
         } = options
         const {filename, fileDir, injectSelector} = output
         const defaultName = 'skeleton'
@@ -138,10 +179,9 @@ class AutoSkeleton {
         const defaultFile = [fileDir || defaultName, '/', filename || defaultName, '.js'].join('')
         await page.screenshot({ path: defaultPage });
         base64Img.base64Sync(defaultPage)
-        const defaultHtml = defaultEval({skeletonDom, injectSelector, loadDestory, pageShowContain})
+        const defaultHtml = defaultEval({skeletonDom, injectSelector, loadDestory, pageShowContain, disabledScript})
 
         this.writeFile(defaultFile, defaultHtml)
-        spinner.clear().succeed(`skeleton screen has created and output to ${fileDir}}`);
         if (!savePicture && fs.existsSync(defaultPage)) {
             fs.unlink(defaultPage, function (err) {
                 if (err) {
@@ -149,18 +189,8 @@ class AutoSkeleton {
                 }
             })
         }  
-        await browser.browser.close();
-        process.exit(0);
     }
-    
-    writeToFilepath(filepath, html) {
-        let fileHTML = fs.readFileSync(filepath);
-        let $ = cheerio.load(fileHTML, {
-          decodeEntities: false
-        });
-        $(this.injectSelector).html(html);
-        fs.writeFileSync(filepath, $.html('html'));
-    }
+   
     writeFile(filepath, html) {
         try {
             // fs.writeFileSync(filepath, html)

@@ -8,13 +8,13 @@
 
 #### 配置：
 
-|url|目标链接|true|
-|:----|:----|:----|
-|output|输出目录<br>{<br>    filename // 生成文件名称<br>    fileDir // 生成文件地址<br>    injectSelector // 注入的节点<br>}|true|
+|multyUrls|目标链接|true|
+|url|单个生成|false|
+|output|生成目录|true|
 |sleepTime|延迟生成|false|
 |loadDestory|挂载卸载|false|
+|disabledScript|不生成所有的 script 标签|false|
 |device|生成的样式|['device', 'pc']|
-|extraHTTPHeaders|请求时带的参数|false|
 |savePicture|保存生成的骨架图片|false|
 |pageShowContain|骨架屏展示的设备|['mobile', 'pc']|
 |backgroundColor|骨架屏生成内容区域的背景色|false|
