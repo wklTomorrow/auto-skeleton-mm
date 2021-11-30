@@ -1,6 +1,6 @@
-module.exports = function ({skeletonDom, injectSelector, loadDestory, pageShowContain, disabledScript}) {
+module.exports = function ({skeletonDom, injectSelector, loadDestory, pageShowContain, disabledScript, isCDN}) {
     return `
-        <div id="${injectSelector}">
+        ${isCDN ? '' : `<div id=${injectSelector}>`}
             <style>
             body {
                 overflow: hidden;
@@ -75,6 +75,6 @@ module.exports = function ({skeletonDom, injectSelector, loadDestory, pageShowCo
                 }
             </script>
             `}
-        </div>
+        ${isCDN ? '' : '</div>'}
     `
 }

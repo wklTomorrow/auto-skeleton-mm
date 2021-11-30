@@ -5,6 +5,7 @@ const pp = require('./src/pp');
 const EvalDom = require('./src/evalDom')
 const base64Img = require('base64-img');
 const defaultEval = require('./src/default.html')
+const createCDNFile = require('./src/CDN')
 const {Spinner, sleep} = require('./src/utils')
 const pluginName = 'AutoSkeletonPlugin'
 
@@ -147,7 +148,9 @@ class AutoSkeleton {
             ignoreClass,
             lineHeight,
             createAll,
-            disabledScript
+            disabledScript,
+            isCDN,
+            injectDOMNode
         } = options
         const defaultName = 'skeleton'
         const defaultDir = path.join(cwd, defaultName)
@@ -173,9 +176,16 @@ class AutoSkeleton {
         const defaultFile = [fileDir || defaultName, '/', filename || defaultName, '.js'].join('')
         await page.screenshot({ path: defaultPage });
         base64Img.base64Sync(defaultPage)
-        const defaultHtml = defaultEval({skeletonDom, injectSelector, loadDestory, pageShowContain, disabledScript})
-
-        this.writeFile(defaultFile, defaultHtml)
+        const defaultHtml = defaultEval({
+            skeletonDom, injectSelector, loadDestory,
+            pageShowContain, disabledScript: isCDN ? true : disabledScript, isCDN
+        })
+        let CDNFile
+        if (isCDN) {
+            console.log(defaultHtml)
+            CDNFile = createCDNFile({defaultHtml, loadDestory, injectDOMNode, injectSelector})
+        }
+        this.writeFile(defaultFile, CDNFile || defaultHtml, isCDN)
         if (!savePicture && fs.existsSync(defaultPage)) {
             fs.unlink(defaultPage, function (err) {
                 if (err) {
@@ -185,10 +195,10 @@ class AutoSkeleton {
         }  
     }
    
-    writeFile(filepath, html) {
+    writeFile(filepath, html, isCDN) {
         try {
             // fs.writeFileSync(filepath, html)
-            fs.writeFileSync(filepath, minify(`module.exports = \`${html}\``, {
+            fs.writeFileSync(filepath, minify(isCDN ? html : `module.exports = \`${html}\``, {
                 minifyCSS: true,
                 minifyJS: true,
                 removeComments: true,

@@ -19,6 +19,8 @@
 |pageShowContain|骨架屏展示的设备|['mobile', 'pc']|
 |backgroundColor|骨架屏生成内容区域的背景色|false|
 |createAll|默认截取dom的可视化窗口的50%|false|
+|isCDN|使用CDN方式引入|false|
+|injectDOMNode|插入dom的位置|body|
 #### use:
 
 ```javascript

@@ -3,21 +3,20 @@ module.exports = {
         {
             url: 'https://www.baidu.com',
             filename: 'baidu-index',
-            fileDir: './baidu-skeleton',
+            fileDir: './static',
             extraHTTPHeaders: {},
-            injectSelector: ''
         },
-        {
-            url: 'https://www.google.com/',
-            filename: 'chrome-index',
-            fileDir: './baidu-skeleton',
-            extraHTTPHeaders: {},
-            injectSelector: ''
-        },
+        // {
+        //     url: 'https://www.google.com/',
+        //     filename: 'chrome-index',
+        //     fileDir: './baidu-skeleton',
+        //     extraHTTPHeaders: {},
+        //     injectSelector: ''
+        // },
     ],
     url: 'https://www.baidu.com',
     filename: 'baidu-index',
-    fileDir: './baidu-skeleton',
+    fileDir: './skeleton',
     injectSelector: 'skeleton',
     backgroundColor: '#EEEFF7',
     sleepTime: 500,
@@ -26,6 +25,8 @@ module.exports = {
     lineHeight: 22,
     disabledScript: true,
     createAll: false,
+    isCDN: true,
+    injectDOMNode: '',
     savePicture: true,
     pageShowContain: ['mobile'], // mobile, pc
 }

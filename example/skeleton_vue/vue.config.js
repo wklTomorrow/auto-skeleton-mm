@@ -13,6 +13,8 @@ if (skeletonConfig.multyUrls.length) {
 }
 const tagCode = require(`${fileDir}/${filename}.js`);
 
+// CDN 暂不支持
+
 module.exports = {
     // 选项...
     configureWebpack: {
