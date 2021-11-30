@@ -92,7 +92,7 @@ class AutoSkeleton {
 
     async init(options = {}) {
         const {
-            headless = false, url, device,  multyUrls,
+            headless = true, url, device,  multyUrls,
             filename,
         } = options
         const spinner = Spinner('magentaBright');
@@ -131,8 +131,8 @@ class AutoSkeleton {
             });
         }
         spinner.clear().succeed(`skeleton screen has created and output to ${targetSkeletonUrl[0].fileDir}}`);
-        // await browser.browser.close();
-        // process.exit(0);
+        await browser.browser.close();
+        process.exit(0);
     }
 
     async dealPage({page, options, spinner}) {
