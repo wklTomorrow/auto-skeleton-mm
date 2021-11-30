@@ -194,9 +194,11 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
                 if (nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
                         const node = nodes[i]
-                        const {offsetTop} = node
-                        if (!createAll && offsetTop && offsetTop > win_h * 1.4) {
-                            continue
+                        const {offsetTop, offsetLeft} = node
+                        if (!createAll) {
+                            if ((offsetTop && offsetTop > win_h * 1.4) || (offsetLeft && offsetLeft > win_w * 1.4)) {
+                                continue
+                            }
                         }
                         let childNodes = node.childNodes || []
                         if (_this.isHideStyle(node)) continue

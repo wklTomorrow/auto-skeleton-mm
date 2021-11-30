@@ -13,7 +13,7 @@ module.exports = {
             fileDir: './baidu-skeleton',
             extraHTTPHeaders: {},
             injectSelector: ''
-        }
+        },
     ],
     url: 'https://www.baidu.com',
     filename: 'baidu-index',

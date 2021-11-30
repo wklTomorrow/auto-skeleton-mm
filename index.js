@@ -92,9 +92,8 @@ class AutoSkeleton {
 
     async init(options = {}) {
         const {
-            headless = true, url, device, sleepTime = 100, extraHTTPHeaders, multyUrls,
-            filename, fileDir, disabledScript = false, injectSelector, loadDestory,
-            pageShowContain, savePicture, backgroundColor, ignoreClass, lineHeight, createAll,
+            headless = false, url, device,  multyUrls,
+            filename,
         } = options
         const spinner = Spinner('magentaBright');
         spinner.text = '启动浏览器...';
@@ -110,8 +109,6 @@ class AutoSkeleton {
                 ...skeleton
             })),
             spinner,
-            sleepTime,
-            options,
             browser,
         })
     }
@@ -119,33 +116,31 @@ class AutoSkeleton {
     async createSkeleton({
         targetSkeletonUrl,
         spinner,
-        sleepTime,
-        options,
         browser,
     }) {
         for await (let urls of targetSkeletonUrl) {
             spinner.text = `正在打开页面：${urls.url}...`;
             const page = await browser.openPage(urls.url, urls.extraHTTPHeaders)
-            await sleep(sleepTime)
+            await sleep(urls.sleepTime)
             await this.dealPage({
                 page,
-                options: {...options, output: {
-                    ...urls,
-                    injectSelector: urls.injectSelector || 'skeleton',
-                    disabledScript: urls.disabledScript
-                }},
+                options: {
+                    ...urls
+                },
                 spinner
             });
         }
         spinner.clear().succeed(`skeleton screen has created and output to ${targetSkeletonUrl[0].fileDir}}`);
-        await browser.browser.close();
-        process.exit(0);
+        // await browser.browser.close();
+        // process.exit(0);
     }
 
     async dealPage({page, options, spinner}) {
         const { 
-            output = {},
             loadDestory,
+            filename,
+            fileDir,
+            injectSelector,
             pageShowContain,
             savePicture,
             backgroundColor,
@@ -154,7 +149,6 @@ class AutoSkeleton {
             createAll,
             disabledScript
         } = options
-        const {filename, fileDir, injectSelector} = output
         const defaultName = 'skeleton'
         const defaultDir = path.join(cwd, defaultName)
         spinner.text = '正在生成骨架屏...';
