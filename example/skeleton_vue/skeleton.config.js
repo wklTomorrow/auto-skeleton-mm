@@ -3,12 +3,14 @@ module.exports = {
         {
             url: 'https://www.baidu.com',
             filename: 'baidu-index',
+            fileDir: './baidu-skeleton',
             extraHTTPHeaders: {},
             injectSelector: ''
         },
         {
             url: 'https://www.google.com/',
             filename: 'chrome-index',
+            fileDir: './baidu-skeleton',
             extraHTTPHeaders: {},
             injectSelector: ''
         }

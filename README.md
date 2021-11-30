@@ -8,7 +8,7 @@
 
 #### 配置：
 
-|multyUrls|目标链接|true|
+|multyUrls|通用数组目录url必填默认当前的所有配置|true|
 |url|单个生成|false|
 |output|生成目录|true|
 |sleepTime|延迟生成|false|
@@ -18,28 +18,44 @@
 |savePicture|保存生成的骨架图片|false|
 |pageShowContain|骨架屏展示的设备|['mobile', 'pc']|
 |backgroundColor|骨架屏生成内容区域的背景色|false|
-
+|createAll|默认截取dom的可视化窗口的50%|false|
 #### use:
 
 ```javascript
 const skeleton = require('auto-skeleton-mm')
 const skeletonConfig = {
+    multyUrls: [
+        // 自动匹配外侧中配置
+        {
+            url: 'https://www.baidu.com',
+            filename: 'baidu-index',
+            fileDir: './baidu-skeleton',
+            extraHTTPHeaders: {},
+            injectSelector: ''
+        },
+        {
+            url: 'https://www.google.com/',
+            filename: 'chrome-index',
+            fileDir: './baidu-skeleton',
+            extraHTTPHeaders: {},
+            injectSelector: ''
+        }
+    ],
     url: 'https://www.baidu.com',
-    output: {
-        filename: 'mm-index',
-        fileDir: './mm-skeleton',
-        injectSelector: 'skeleton'
-    },
-    backgroundColor: '#666666',
+    filename: 'baidu-index',
+    fileDir: './baidu-skeleton',
+    injectSelector: 'skeleton',
+    backgroundColor: '#EEEFF7',
     sleepTime: 500,
     loadDestory: false,
     device: 'mobile',
-    extraHTTPHeaders: {
-        cookie: ''
-    },
+    lineHeight: 22,
+    disabledScript: true,
+    createAll: false,
     savePicture: true,
     pageShowContain: ['mobile'], // mobile, pc
 }
+
 new Skeleton().init(
     skeletonConfig
 )

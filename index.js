@@ -93,7 +93,8 @@ class AutoSkeleton {
     async init(options = {}) {
         const {
             headless = true, url, device, sleepTime = 100, extraHTTPHeaders, multyUrls,
-            filename, fileDir, disabledScript = false
+            filename, fileDir, disabledScript = false, injectSelector, loadDestory,
+            pageShowContain, savePicture, backgroundColor, ignoreClass, lineHeight, createAll,
         } = options
         const spinner = Spinner('magentaBright');
         spinner.text = '启动浏览器...';
@@ -102,15 +103,14 @@ class AutoSkeleton {
             url: url,
             filename: filename
         }]
+        multyUrls && delete options.multyUrls
         this.createSkeleton({
             targetSkeletonUrl: targetSkeletonUrl.map(skeleton => ({
-                ...skeleton,
-                fileDir: fileDir,
-                disabledScript: targetSkeletonUrl.disabledScript || disabledScript
+                ...options,
+                ...skeleton
             })),
             spinner,
             sleepTime,
-            extraHTTPHeaders,
             options,
             browser,
         })
@@ -131,7 +131,7 @@ class AutoSkeleton {
                 page,
                 options: {...options, output: {
                     ...urls,
-                    injectSelector: urls.injectSelector || options.injectSelector || 'skeleton',
+                    injectSelector: urls.injectSelector || 'skeleton',
                     disabledScript: urls.disabledScript
                 }},
                 spinner
