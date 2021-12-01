@@ -182,7 +182,6 @@ class AutoSkeleton {
         })
         let CDNFile
         if (isCDN) {
-            console.log(defaultHtml)
             CDNFile = createCDNFile({defaultHtml, loadDestory, injectDOMNode, injectSelector})
         }
         this.writeFile(defaultFile, CDNFile || defaultHtml, isCDN)

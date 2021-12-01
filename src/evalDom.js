@@ -274,20 +274,21 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
                             if (childNodes.length === 1 && _this.isText(childNodes[0])) {
                                 let innerSpan = document.createElement('span')
                                 innerSpan.textContent = node.textContent
-                                // const lineHeight = _this.getStyle(node, 'line-height')
-                                // let height = _this.getStyle(node, 'height')
                                 let {
                                     lineHeight,
-                                    height
-                                } = _this.getStyles(node, ['lineHeight', 'height'])
+                                    height,
+                                    paddingTop,
+                                    paddingBottom
+                                } = _this.getStyles(node, ['lineHeight', 'height', 'paddingTop', 'paddingBottom'])
                                 _this.copyObjFromOtherObjAttr(innerSpan.style, {
                                     visibility: 'hidden'
                                 })
-                                if (parseInt(height) / parseInt(lineHeight) > 1.1) {
+                                const heightLine = parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom)
+                                if (heightLine / parseInt(lineHeight) > 1.1) {
                                     _this.copyObjFromOtherObjAttr(nodeCopy.style, {
                                         height,
                                         backgroundImage: `linear-gradient(transparent 20%, ${_this.shadowColor} 0%, ${_this.shadowColor} 80%, transparent 0%)`,
-                                        backgroundSize: `100% ${lineHeights || lineHeight}`
+                                        backgroundSize: `100% ${lineHeights ? `${lineHeights}px` : lineHeight}`
                                     })
                                 } else {
                                     const fontHeight = _this.getStyle(node, 'font-size')
