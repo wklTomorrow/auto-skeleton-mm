@@ -98,20 +98,25 @@ class AutoSkeleton {
         } = options
         const spinner = Spinner('magentaBright');
         spinner.text = '启动浏览器...';
-        const browser = await pp({device, headless})
-        const targetSkeletonUrl = multyUrls && Array.isArray(multyUrls) ? multyUrls : [{
-            url: url,
-            filename: filename
-        }]
-        multyUrls && delete options.multyUrls
-        this.createSkeleton({
-            targetSkeletonUrl: targetSkeletonUrl.map(skeleton => ({
-                ...options,
-                ...skeleton
-            })),
-            spinner,
-            browser,
-        })
+        try {
+            const browser = await pp({device, headless})
+            const targetSkeletonUrl = multyUrls && Array.isArray(multyUrls) ? multyUrls : [{
+                url: url,
+                filename: filename
+            }]
+            multyUrls && delete options.multyUrls
+            this.createSkeleton({
+                targetSkeletonUrl: targetSkeletonUrl.map(skeleton => ({
+                    ...options,
+                    ...skeleton
+                })),
+                spinner,
+                browser,
+            })
+        } catch(e) {
+            console.log('生成失败')
+            process.exit(0);
+        }
     }
 
     async createSkeleton({
