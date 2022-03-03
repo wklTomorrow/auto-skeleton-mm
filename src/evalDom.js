@@ -348,7 +348,8 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
             const commonStyle = this.onGetBody(dom, {
                 margin: '8px',
                 fontSize: '16px',
-                lineHeight: 'normal'
+                lineHeight: 'normal',
+                fontFamily: ''
             })
             const bodyStyleList = Object.keys(commonStyle)
             if (bodyStyleList.length) {
