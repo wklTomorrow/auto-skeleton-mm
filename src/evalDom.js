@@ -45,6 +45,7 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
                 flexDirection,
                 alignItems,
                 justifyContent,
+                margin
             } = getComputedStyle(node)
             return {
                 'background-color': backgroundColor,
@@ -59,6 +60,7 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
                 'flex-direction': flexDirection,
                 'align-items': alignItems,
                 'justify-content': justifyContent,
+                margin
             }
         }
 
@@ -92,7 +94,7 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
             return attrs
         }
         
-        filterNodeDefaultStyle(attrs, defaultFilter, tagName) {
+        filterNodeDefaultStyle(attrs, defaultFilter = {}, tagName) {
             let attrsObj = {}
             let filterTemplate = {
                 position: 'static',
@@ -136,7 +138,10 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
             }
             let keys = Object.keys(attrs) || []
             let tags = tagName && tagName.toLowerCase()
-            let filterObj = defaultFilter || filterTemplate
+            let filterObj = {
+                ...filterTemplate,
+                ...defaultFilter,
+            }
             keys.forEach(key => {
                 let keysStr = this.toCamelCaseStr(key) || ''
                 if (Array.isArray(filterObj[keysStr])) {
@@ -175,9 +180,21 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
             })
         }
 
+        onGetBody(body, styles = {}) {
+            const commonStyle = {}
+            Object.keys(styles).map(key => {
+                const curStyle = this.getStyle(body, key)
+                if (styles[key] !== curStyle) {
+                    commonStyle[key] = curStyle
+                }
+            })
+            return commonStyle
+        }
+
         startDraw() {
             const dom = document.body
             let _this = this
+            // 获取 body 默认样式
             const rootNode = document.createElement('div')
             _this.setAttributes(rootNode, {
                 id: 'skeleton-view',
@@ -241,11 +258,15 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
                                 'z-index'
                             ])
                             _this.copyObjFromOtherObjAttr(nodeCopy.style, {
+                                ..._this.filterNodeDefaultStyle(attrs, null, nodeCopy.tagName)
+                            }, {
                                 ..._this.filterNodeDefaultStyle({
                                     ..._this.getNodeStyle(node),
-                                }, null, nodeCopy.tagName)
-                            }, {
-                                ..._this.filterNodeDefaultStyle(attrs, null, nodeCopy.tagName)
+                                }, {
+                                    ...(nodeCopy.tagName === 'P' ? {
+                                        margin: '16px',
+                                    } : {})
+                                }, nodeCopy.tagName)
                             })
                             // 处理图片
                             if (nodeCopyTagName.toLowerCase() === 'img' ) {
@@ -324,6 +345,23 @@ module.exports = function({backgroundColor, ignoreClass, lineHeight: lineHeights
             ;[...childs].forEach(n => {
                 document.body.removeChild(n)
             })
+            const commonStyle = this.onGetBody(dom, {
+                margin: '8px',
+                fontSize: '16px',
+                lineHeight: 'normal'
+            })
+            const bodyStyleList = Object.keys(commonStyle)
+            if (bodyStyleList.length) {
+                const Style = document.createElement('style')
+                const innerTextList = ['body {']
+                bodyStyleList.forEach(style => {
+                    innerTextList.push(`${this.toCamelCaseStr(style)}: ${commonStyle[style]};`)
+                })
+                innerTextList.push('}')
+                const textBody = document.createTextNode(innerTextList.join(''))
+                Style.appendChild(textBody)
+                document.body.appendChild(Style)
+            }
             document.body.appendChild(rootNode)
             return rootNode;
         }
