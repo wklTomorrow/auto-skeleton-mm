@@ -25,7 +25,7 @@ module.exports = {
     lineHeight: 22,
     disabledScript: true,
     createAll: false,
-    isCDN: true,
+    isCDN: false,
     injectDOMNode: '',
     savePicture: true,
     pageShowContain: ['mobile'], // mobile, pc
